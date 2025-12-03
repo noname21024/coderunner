@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering Blog - typingrunner</title>
+    <meta name="description" content="Insights on coding, hardware, and developer productivity. Read our latest articles on touch typing, editors, and more.">
+    
+    <!-- Favicon & Manifest -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="manifest" href="manifest.json">
+
+    <!-- SEO & Social -->
+    <meta property="og:title" content="Engineering Blog - typingrunner">
+    <meta property="og:description" content="Insights on coding, hardware, and developer productivity.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://typingrunner.com/blog.html">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1499750310159-5254f41265aa?q=80&w=1200&auto=format&fit=crop">
+    <meta name="twitter:card" content="summary_large_image">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-zinc-950 text-zinc-100 antialiased selection:bg-indigo-500/30">
+    <div class="fixed inset-0 z-[-1] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-zinc-950 to-zinc-950"></div>
+    <div id="spotlight" class="pointer-events-none fixed inset-0 z-0 transition-opacity duration-300"></div>
+
+    <div class="relative z-10 flex min-h-screen flex-col">
+        <!-- Header -->
+        <header class="sticky top-0 z-50 border-b border-white/5 bg-zinc-950/80 backdrop-blur-xl">
+            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center gap-2">
+                    <a href="https://typingrunner.com" class="flex items-center gap-2">
+                        <div class="site-logo relative flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10 ring-1 ring-indigo-500/50 overflow-hidden">
+                            <img src="img/logo.svg" alt="typingrunner logo" />
+                        </div>
+                        <span class="text-lg font-bold tracking-tight text-zinc-100">typingrunner</span>
+                    </a>
+                </div>
+
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="index.html" class="text-sm font-medium text-zinc-400 transition-colors hover:text-indigo-400">Game</a>
+                    <a href="blog.html" class="text-sm font-medium text-indigo-400 transition-colors">Blog</a>
+                    <a href="privacy.html" class="text-sm font-medium text-zinc-400 transition-colors hover:text-indigo-400">Privacy</a>
+                    <a href="terms.html" class="text-sm font-medium text-zinc-400 transition-colors hover:text-indigo-400">Terms</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 px-4 py-8 sm:px-6 lg:px-8">
+            <div class="mx-auto max-w-6xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div class="mb-10 text-center">
+                    <h1 class="text-4xl font-bold tracking-tight text-white sm:text-5xl">Engineering Blog</h1>
+                    <p class="mt-4 text-lg text-zinc-500">Insights on coding, hardware, and developer productivity.</p>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2" id="blog-grid">
+                    <!-- Blog posts will be rendered here by JS -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="w-full border-t border-white/5 bg-zinc-950/50 py-10 mt-auto">
+            <div class="mx-auto flex max-w-7xl flex-col gap-8 px-6 md:flex-row md:items-center md:justify-between">
+                <!-- Brand -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center gap-2">
+                        <a href="https://typingrunner.com" class="flex items-center gap-2">
+                            <div class="site-logo rounded-lg overflow-hidden bg-transparent">
+                                <img src="img/logo.svg" alt="typingrunner logo" />
+                            </div>
+                            <span class="font-sans text-sm font-bold text-zinc-200">typingrunner</span>
+                        </a>
+                        <span class="rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] font-medium text-zinc-400">v1.0</span>
+                    </div>
+                    <p class="max-w-xs text-xs leading-relaxed text-zinc-500">
+                        A minimalist typing speed test designed for developers. Improve your WPM in JavaScript, Python, Go, and more.
+                    </p>
+                </div>
+
+                <!-- Links -->
+                <div class="flex gap-12">
+                    <div class="flex flex-col gap-3">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Legal</span>
+                        <a href="privacy.html" class="text-left text-xs text-zinc-600 hover:text-zinc-300 transition-colors">Privacy Policy</a>
+                        <a href="terms.html" class="text-left text-xs text-zinc-600 hover:text-zinc-300 transition-colors">Terms of Service</a>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Share</span>
+                        <div class="flex items-center gap-3">
+                            <button onclick="handleShare('x')" class="group flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-zinc-900 transition-all hover:bg-zinc-800 hover:text-white text-zinc-500" title="Share on X">
+                                <i data-lucide="twitter" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="handleShare('facebook')" class="group flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-zinc-900 transition-all hover:bg-zinc-800 hover:text-blue-400 text-zinc-500" title="Share on Facebook">
+                                <i data-lucide="facebook" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="handleShare('copy')" class="group relative flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-zinc-900 transition-all hover:bg-zinc-800 hover:text-pink-400 text-zinc-500" title="Share on Instagram / TikTok (Copy Link)">
+                                <i data-lucide="instagram" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="handleShare('copy')" class="group relative flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-zinc-900 transition-all hover:bg-zinc-800 hover:text-white text-zinc-500" title="Share Link">
+                                <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-10 border-t border-white/5 pt-6 text-center">
+                <p class="text-[10px] text-zinc-700">
+                    © 2025 typingrunner. All rights reserved.
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Spotlight Effect
+        const spotlight = document.getElementById('spotlight');
+        document.addEventListener('mousemove', (e) => {
+            requestAnimationFrame(() => {
+                spotlight.style.background = `radial-gradient(600px circle at ${e.clientX}px ${e.clientY}px, rgba(99,102,241,0.06), transparent 40%)`;
+            });
+        });
+
+        // Share Logic
+        window.handleShare = (platform) => {
+            const url = window.location.href;
+            const text = "Check out typingrunner - The ultimate developer typing test!";
+            const encodedUrl = encodeURIComponent(url);
+            const encodedText = encodeURIComponent(text);
+
+            switch (platform) {
+                case 'x':
+                    window.open(`https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`, '_blank');
+                    break;
+                case 'facebook':
+                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, '_blank');
+                    break;
+                case 'copy':
+                    if (navigator.share) {
+                        navigator.share({
+                            title: 'typingrunner',
+                            text: text,
+                            url: url
+                        }).catch(console.error);
+                    } else {
+                        navigator.clipboard.writeText(url).then(() => {
+                            alert('Link copied to clipboard!');
+                        });
+                    }
+                    break;
+            }
+        };
+
+        // Blog Data
+        const BLOG_POSTS = [
+            { id: '1', title: 'The Art of Touch Typing for Developers', excerpt: 'Why muscle memory matters more than you think when debugging complex systems.', author: 'Sarah Jenkins', date: 'Oct 12, 2023', readTime: '5 min read', tags: ['Productivity', 'Career'] },
+            { id: '2', title: 'Vim vs Emacs: The Eternal War', excerpt: 'An unbiased look at the two most legendary text editors in history.', author: 'David Chen', date: 'Oct 15, 2023', readTime: '8 min read', tags: ['Editors', 'History'] },
+            { id: '3', title: 'Mastering Regular Expressions', excerpt: 'Regex doesn’t have to be scary. Here are 5 patterns every dev should know.', author: 'Alex Rivera', date: 'Oct 18, 2023', readTime: '6 min read', tags: ['Tutorial', 'Code'] },
+            { id: '4', title: 'Why I Switched to Dvorak', excerpt: 'A personal journey of breaking QWERTY habits and finding ergonomic bliss.', author: 'Emily Blunt', date: 'Oct 20, 2023', readTime: '7 min read', tags: ['Ergonomics', 'Health'] },
+            { id: '5', title: 'Top 10 Mechanical Keyboards for 2024', excerpt: 'From clicky blues to silent reds, finding the perfect switch for your flow.', author: 'Mike Ross', date: 'Oct 22, 2023', readTime: '10 min read', tags: ['Hardware', 'Reviews'] },
+            { id: '6', title: 'The Future of AI Coding Assistants', excerpt: 'Will tools like Gemini and Copilot replace us, or make us superhumans?', author: 'Jessica Lee', date: 'Oct 25, 2023', readTime: '5 min read', tags: ['AI', 'Future'] },
+            { id: '7', title: 'Healthy Hands: Preventing RSI', excerpt: 'Stretches and habits to keep your most valuable assets in top shape.', author: 'Dr. Alan Grant', date: 'Oct 28, 2023', readTime: '4 min read', tags: ['Health', 'Tips'] },
+            { id: '8', title: 'Understanding Big O Notation', excerpt: 'A refresher on algorithmic complexity and why it impacts your code performance.', author: 'Grace Hopper Fan', date: 'Nov 01, 2023', readTime: '12 min read', tags: ['CS Theory', 'Algorithms'] },
+            { id: '9', title: 'Rust for JavaScript Developers', excerpt: 'Bridging the gap between the web and systems programming.', author: 'Tom Smith', date: 'Nov 03, 2023', readTime: '9 min read', tags: ['Rust', 'JavaScript'] },
+            { id: '10', title: 'Achieving Flow State', excerpt: 'Psychological triggers to get into the zone and stay there longer.', author: 'Mihaly C.', date: 'Nov 05, 2023', readTime: '6 min read', tags: ['Psychology', 'Productivity'] }
+        ];
+
+        // Render Blog Posts
+        const blogGrid = document.getElementById('blog-grid');
+        blogGrid.innerHTML = BLOG_POSTS.map(post => `
+            <article class="group relative flex cursor-pointer flex-col justify-between rounded-2xl border border-white/5 bg-zinc-900/40 p-6 transition-all hover:border-white/10 hover:bg-zinc-900/60" onclick="alert('This feature is currently disabled.')">
+                <div>
+                    <div class="mb-4 flex flex-wrap gap-2">
+                        ${post.tags.map(tag => `<span class="rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-xs font-medium text-indigo-400">${tag}</span>`).join('')}
+                    </div>
+                    <h3 class="text-xl font-bold text-zinc-200 group-hover:text-indigo-400 transition-colors">${post.title}</h3>
+                    <p class="mt-3 text-sm leading-relaxed text-zinc-400">${post.excerpt}</p>
+                </div>
+                <div class="mt-6 flex items-center justify-between border-t border-white/5 pt-4">
+                    <div class="flex items-center gap-4 text-xs text-zinc-500">
+                        <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> ${post.date}</span>
+                        <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${post.readTime}</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-xs font-medium text-zinc-500 group-hover:text-indigo-400 transition-colors">
+                        Read Article <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                    </div>
+                </div>
+            </article>
+        `).join('');
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>

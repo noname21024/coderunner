@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>typingrunner - Developer Typing Speed Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Favicon & Manifest -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="manifest" href="manifest.json">
+
+    <!-- SEO & Social -->
+    <meta name="description" content="A minimalist typing speed test designed for developers. Improve your WPM in JavaScript, Python, Go, and more.">
+    <meta property="og:title" content="typingrunner - Developer Typing Speed Test">
+    <meta property="og:description" content="Test your coding speed with real code snippets. Support for JS, Python, Go, Rust, and more.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://typingrunner.com">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1587620962725-abab7fe55159?q=80&w=1200&auto=format&fit=crop">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="typingrunner - Developer Typing Speed Test">
+    <meta name="twitter:description" content="Test your coding speed with real code snippets.">
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1587620962725-abab7fe55159?q=80&w=1200&auto=format&fit=crop">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-zinc-950 text-zinc-100 font-sans min-h-screen flex flex-col relative overflow-x-hidden selection:bg-indigo-500/30">
+    <!-- Spotlight Effect -->
+    <div id="spotlight" class="pointer-events-none fixed inset-0 z-0 transition-opacity duration-1000"></div>
+    <div class="fixed inset-0 z-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 pointer-events-none"></div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 w-full border-b border-white/5 bg-zinc-950/80 backdrop-blur-md">
+        <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
+            <div class="flex items-center gap-8">
+                <a href="https://typingrunner.com" class="flex items-center gap-2 site-link">
+                    <div class="site-logo flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 border border-white/10 shadow-[0_0_15px_-3px_rgba(99,102,241,0.2)]">
+                        <img src="img/logo.svg" alt="typingrunner logo" />
+                    </div>
+                    <span class="font-sans text-sm font-semibold tracking-tight text-zinc-200">typingrunner</span>
+                </a>
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="index.html" class="text-sm font-medium text-indigo-400 transition-colors">Game</a>
+                    <a href="blog.html" class="text-sm font-medium text-zinc-400 transition-colors hover:text-indigo-400">Blog</a>
+                    <a href="privacy.html" class="text-sm font-medium text-zinc-400 transition-colors hover:text-indigo-400">Privacy</a>
+                    <a href="terms.html" class="text-sm font-medium text-zinc-400 transition-colors hover:text-indigo-400">Terms</a>
+                </nav>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="#" class="group flex items-center gap-2 rounded-full border border-white/5 bg-zinc-900 px-3 py-1.5 transition-colors hover:border-white/10 hover:bg-zinc-800">
+                    <i data-lucide="github" class="w-3.5 h-3.5 text-zinc-500 transition-colors group-hover:text-zinc-300"></i>
+                    <span class="text-xs font-medium text-zinc-400 group-hover:text-zinc-300">Star</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10 flex flex-col flex-1 items-center pt-8 pb-20 px-4 sm:px-6 w-full max-w-[1600px] mx-auto">
+        <div class="grid w-full grid-cols-1 gap-8 md:grid-cols-[200px_1fr_200px] lg:grid-cols-[280px_1fr_280px]">
+            
+            <!-- Left Column (Ads/Placeholder) -->
+            <aside class="hidden md:flex flex-col items-center pt-20 transition-opacity duration-500" id="left-aside">
+                <div class="w-full h-[600px] rounded-xl border border-white/5 bg-zinc-900/20 p-4 flex flex-col items-center justify-center text-zinc-700 gap-4">
+                    <span class="text-xs font-mono uppercase tracking-widest opacity-50">Advertisement</span>
+                </div>
+            </aside>
+
+            <!-- Center Area -->
+            <section class="flex flex-col items-center min-w-0 w-full">
+                
+                <!-- Game Control Bar -->
+                <div id="game-controls" class="w-full max-w-6xl flex flex-col gap-6 overflow-hidden transition-all duration-700 mb-10">
+                    <div class="flex flex-col xl:flex-row items-center justify-between gap-4 rounded-xl border border-white/5 bg-zinc-900/40 p-2 backdrop-blur-md shadow-sm">
+                        <div class="flex flex-wrap items-center justify-center gap-4">
+                            <!-- Content Type -->
+                            <div class="flex bg-zinc-950/50 rounded-lg p-1 border border-white/5">
+                                <button id="btn-type-code" class="flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium bg-zinc-800 text-zinc-100 shadow-sm transition-all">
+                                    <i data-lucide="code-2" class="w-3.5 h-3.5"></i> Code
+                                </button>
+                                <button id="btn-type-text" class="flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-300 transition-all">
+                                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Text
+                                </button>
+                            </div>
+
+                            <!-- Game Mode -->
+                            <div class="flex bg-zinc-950/50 rounded-lg p-1 border border-white/5">
+                                <button id="btn-mode-standard" class="flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium bg-zinc-800 text-zinc-100 shadow-sm transition-all">
+                                    <i data-lucide="target" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">Standard</span>
+                                </button>
+                                <button id="btn-mode-sudden" class="flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium text-zinc-500 hover:text-red-400 transition-all">
+                                    <i data-lucide="skull" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">Sudden Death</span>
+                                </button>
+                                <button id="btn-mode-time" class="flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium text-zinc-500 hover:text-amber-400 transition-all">
+                                    <i data-lucide="zap" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">Time Attack</span>
+                                </button>
+                            </div>
+
+                            <!-- Language Select -->
+                            <div class="relative group">
+                                <select id="language-select" class="appearance-none rounded-lg border border-white/10 bg-zinc-900/80 px-4 py-2 pr-10 text-sm font-medium text-zinc-300 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/20 cursor-pointer hover:bg-zinc-800 transition-colors">
+                                    <!-- Options populated by JS -->
+                                </select>
+                                <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500">
+                                    <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Time Select -->
+                        <div class="relative group">
+                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
+                                <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                            </div>
+                            <select id="time-select" class="appearance-none rounded-lg border border-white/10 bg-zinc-900/80 pl-9 pr-10 py-2 text-sm font-medium text-zinc-300 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/20 cursor-pointer hover:bg-zinc-800 transition-colors">
+                                <option value="15">15s</option>
+                                <option value="30">30s</option>
+                                <option value="60" selected>60s</option>
+                                <option value="90">90s</option>
+                                <option value="120">120s</option>
+                            </select>
+                            <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500">
+                                <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game Title -->
+                <div id="game-title-area" class="mb-8 text-center transition-all duration-700 ease-in-out">
+                    <h1 id="lesson-title" class="text-4xl font-bold tracking-tight text-white sm:text-5xl">Select a Lesson</h1>
+                    <p class="mt-4 text-lg text-zinc-500">Curated exercises to build muscle memory.</p>
+                </div>
+
+                <!-- Typing Area -->
+                <div id="typing-container" class="relative w-full max-w-6xl flex flex-col items-center">
+                    
+                    <!-- Live Stats -->
+                    <div id="live-stats" class="mb-6 w-full flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between transition-opacity duration-500">
+                        <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-8">
+                            <div class="flex flex-col items-center sm:items-start">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Time</span>
+                                <div class="flex items-center gap-2 font-mono text-xl sm:text-2xl font-bold text-zinc-200">
+                                    <i data-lucide="timer" class="w-4 h-4 text-zinc-500"></i>
+                                    <span id="timer-display">60s</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-center sm:items-start">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Net WPM</span>
+                                <span id="wpm-display" class="font-mono text-xl sm:text-2xl font-bold text-indigo-400">0</span>
+                            </div>
+                            <div class="flex flex-col items-center sm:items-start">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Accuracy</span>
+                                <span id="acc-display" class="font-mono text-xl sm:text-2xl font-bold text-zinc-200">100%</span>
+                            </div>
+                             <div id="combo-container" class="flex flex-col items-center sm:items-start transition-all duration-300 opacity-50 scale-100">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Combo</span>
+                                <div class="flex items-center gap-2 font-mono text-xl sm:text-2xl font-bold text-orange-400">
+                                    <i data-lucide="flame" class="w-4 h-4"></i>
+                                    <span id="combo-display">0x</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-center gap-3">
+                            <button id="btn-sound" class="rounded p-2 transition-colors text-indigo-400 bg-indigo-500/10" title="Toggle Sound">
+                                <i data-lucide="volume-2" class="w-4 h-4"></i>
+                            </button>
+                            <button id="btn-pause" class="rounded p-2 transition-colors text-zinc-600 hover:text-zinc-400 disabled:opacity-50" disabled title="Pause (Esc)">
+                                <i data-lucide="pause" class="w-4 h-4"></i>
+                            </button>
+                            <span id="lang-badge" class="rounded bg-zinc-900 px-2 py-1 text-xs font-medium text-zinc-500 border border-white/5">JavaScript</span>
+                            <button id="btn-restart" class="rounded p-2 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors" title="Restart">
+                                <i data-lucide="refresh-ccw" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="relative w-full group" id="editor-wrapper">
+                        <textarea id="hidden-input" class="absolute inset-0 -z-10 h-full w-full opacity-0 resize-none cursor-default" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
+                        
+                        <div id="code-display" class="relative min-h-[400px] max-h-[600px] w-full cursor-text overflow-hidden rounded-xl border border-white/5 bg-zinc-950/50 p-8 shadow-2xl backdrop-blur-sm transition-all duration-300 hover:border-white/10">
+                            
+                            <!-- Paused Overlay -->
+                            <div id="paused-overlay" class="hidden absolute inset-0 z-50 flex-col items-center justify-center bg-zinc-950/80 backdrop-blur-sm">
+                                <i data-lucide="pause" class="w-12 h-12 text-zinc-500 mb-4"></i>
+                                <h3 class="text-xl font-bold text-zinc-200">Paused</h3>
+                                <p class="text-zinc-500 mt-2 text-sm">Press Esc or Play button to resume</p>
+                            </div>
+
+                            <!-- Gutter -->
+                            <div id="gutter" class="absolute left-0 top-0 bottom-0 w-12 border-r border-white/5 bg-zinc-900/30 pt-8 text-right font-mono text-base text-zinc-700 select-none">
+                                <!-- Line numbers generated by JS -->
+                            </div>
+
+                            <!-- Code Content -->
+                            <div id="code-content" class="pl-8 font-mono text-base leading-relaxed tracking-wide antialiased whitespace-pre-wrap break-words relative select-none pointer-events-none">
+                                <!-- Code spans generated by JS -->
+                                <div id="cursor" class="absolute w-[2px] h-[1.5rem] bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)] rounded-full animate-pulse transition-all duration-100 ease-linear z-20" style="top: 32px; left: 32px; display: none;"></div>
+                            </div>
+
+                            <!-- Start Prompt -->
+                            <div id="start-prompt" class="absolute bottom-4 right-6 flex items-center gap-2 text-xs text-zinc-500 animate-pulse select-none pointer-events-none">
+                                <div class="flex h-5 w-5 items-center justify-center rounded border border-white/10 bg-zinc-900 shadow-inner">
+                                    <span class="font-sans font-bold">I</span>
+                                </div>
+                                <span>Start typing to begin</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Virtual Keyboard -->
+                    <div id="virtual-keyboard" class="mt-8 hidden w-full max-w-3xl flex-col items-center gap-2 select-none md:flex">
+                        <!-- Keyboard rows generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Results Overlay (Hidden by default) -->
+                <div id="results-screen" class="hidden w-full max-w-4xl flex-col items-center animate-in fade-in zoom-in-95 duration-300">
+                    <div class="w-full rounded-2xl border border-white/10 bg-zinc-900/50 p-8 backdrop-blur-xl shadow-2xl">
+                         <div class="flex flex-col items-center text-center">
+                            <div class="mb-2 rounded-full bg-indigo-500/10 p-3 text-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
+                                <i data-lucide="trophy" class="w-8 h-8"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-white">Test Complete!</h2>
+                            <p class="mt-2 text-zinc-400">Great job! Here's how you performed.</p>
+                        </div>
+                        
+                        <div class="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                            <div class="flex flex-col items-center rounded-xl bg-zinc-950/50 p-4 border border-white/5">
+                                <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">WPM</span>
+                                <span id="res-wpm" class="mt-1 text-3xl font-bold text-indigo-400">0</span>
+                            </div>
+                            <div class="flex flex-col items-center rounded-xl bg-zinc-950/50 p-4 border border-white/5">
+                                <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">Accuracy</span>
+                                <span id="res-acc" class="mt-1 text-3xl font-bold text-emerald-400">0%</span>
+                            </div>
+                             <div class="flex flex-col items-center rounded-xl bg-zinc-950/50 p-4 border border-white/5">
+                                <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">Time</span>
+                                <span id="res-time" class="mt-1 text-3xl font-bold text-zinc-200">0s</span>
+                            </div>
+                             <div class="flex flex-col items-center rounded-xl bg-zinc-950/50 p-4 border border-white/5">
+                                <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">Errors</span>
+                                <span id="res-errors" class="mt-1 text-3xl font-bold text-red-400">0</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 flex justify-center gap-4">
+                            <button id="btn-res-restart" class="flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2.5 font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-500 hover:scale-105 active:scale-95">
+                                <i data-lucide="refresh-ccw" class="w-4 h-4"></i> Play Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lesson List -->
+                <div id="lesson-list" class="w-full mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 transition-opacity duration-500">
+                    <!-- Populated by JS -->
+                </div>
+
+            </section>
+
+            <!-- Right Column: Leaderboard -->
+            <aside class="hidden lg:flex flex-col items-center pt-20 transition-opacity duration-500" id="right-aside">
+                <div class="w-full rounded-xl border border-white/5 bg-zinc-900/40 p-6 backdrop-blur-md">
+                    <div class="flex items-center gap-2 mb-6">
+                        <i data-lucide="trophy" class="w-4 h-4 text-yellow-500"></i>
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-zinc-400">Leaderboard</h3>
+                    </div>
+                    
+                    <div class="mb-4 flex items-center gap-2 rounded-lg bg-zinc-950/50 p-2 border border-white/5">
+                        <div class="flex h-8 w-8 items-center justify-center rounded bg-indigo-500/20 text-indigo-400">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <input type="text" id="username-input" value="Guest" class="w-full bg-transparent text-sm font-medium text-zinc-200 focus:outline-none" maxlength="12">
+                        </div>
+                    </div>
+
+                    <div id="leaderboard-list" class="flex flex-col gap-2">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full border-t border-white/5 bg-zinc-950/50 py-10 mt-auto">
+        <div class="mx-auto flex max-w-7xl flex-col gap-8 px-6 md:flex-row md:items-center md:justify-between">
+            <!-- Brand -->
+            <div class="flex flex-col gap-2">
+                <div class="flex items-center gap-2">
+                    <a href="https://typingrunner.com" class="flex items-center gap-2">
+                        <div class="site-logo rounded-lg overflow-hidden bg-transparent">
+                            <img src="img/logo.svg" alt="typingrunner logo" />
+                        </div>
+                        <span class="font-sans text-sm font-bold text-zinc-200">typingrunner</span>
+                    </a>
+                    <span class="rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] font-medium text-zinc-400">v1.0</span>
+                </div>
+                <p class="max-w-xs text-xs leading-relaxed text-zinc-500">
+                    A minimalist typing speed test designed for developers. Improve your WPM in JavaScript, Python, Go, and more.
+                </p>
+            </div>
+
+            <!-- Links -->
+            <div class="flex gap-12">
+                <div class="flex flex-col gap-3">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Legal</span>
+                    <a href="privacy.html" class="text-left text-xs text-zinc-600 hover:text-zinc-300 transition-colors">Privacy Policy</a>
+                    <a href="terms.html" class="text-left text-xs text-zinc-600 hover:text-zinc-300 transition-colors">Terms of Service</a>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Share</span>
+                    <div class="flex items-center gap-3">
+                        <button onclick="handleShare('x')" class="group flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-zinc-900 transition-all hover:bg-zinc-800 hover:text-white text-zinc-500" title="Share on X">
+                            <i data-lucide="twitter" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button onclick="handleShare('facebook')" class="group flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-zinc-900 transition-all hover:bg-zinc-800 hover:text-blue-400 text-zinc-500" title="Share on Facebook">
+                            <i data-lucide="facebook" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button onclick="handleShare('copy')" class="group relative flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-zinc-900 transition-all hover:bg-zinc-800 hover:text-pink-400 text-zinc-500" title="Share on Instagram / TikTok (Copy Link)">
+                            <i data-lucide="instagram" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button onclick="handleShare('copy')" class="group relative flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-zinc-900 transition-all hover:bg-zinc-800 hover:text-white text-zinc-500" title="Share Link">
+                            <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-10 border-t border-white/5 pt-6 text-center">
+                <p class="text-[10px] text-zinc-700">
+                © 2025 typingrunner. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/lessons_1.js"></script>
+    <script src="js/lessons_2.js"></script>
+    <script src="js/lessons_3.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
