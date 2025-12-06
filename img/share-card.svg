@@ -27,5 +27,5 @@
   <rect x="100" y="300" width="320" height="70" rx="18" fill="url(#accent)"/>
   <text x="130" y="348" font-family="'JetBrains Mono', 'Segoe UI', monospace" font-size="32" font-weight="600" fill="#F5F3FF">Avg 120+ WPM</text>
   <text x="100" y="430" font-family="'Inter', 'Segoe UI', sans-serif" font-size="48" font-weight="700" fill="#A5B4FC">http://typingrunner.me/</text>
-  <text x="100" y="500" font-family="'Inter', 'Segoe UI', sans-serif" font-size="22" font-weight="400" fill="#94A3B8">Practice with JS, Python, Go, Rust & more.</text>
+  <text x="100" y="500" font-family="'Inter', 'Segoe UI', sans-serif" font-size="22" font-weight="400" fill="#94A3B8">Practice with JS, Python, Go, Rust &amp; more.</text>
 </svg>
