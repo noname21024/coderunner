@@ -1,3 +1,6 @@
+// Global Config
+const SITE_URL = 'http://typingrunner.me/';
+
 // Global State
 const state = {
     status: 'IDLE', // IDLE, PLAYING, PAUSED, FINISHED
@@ -16,7 +19,8 @@ const state = {
     soundEnabled: JSON.parse(localStorage.getItem('soundEnabled') ?? 'true'),
     userName: localStorage.getItem('cr_username') || 'Guest',
     timerInterval: null,
-    dailyMockData: []
+    dailyMockData: [],
+    lastResult: null
 };
 
 // Aggregate Lessons
@@ -67,11 +71,31 @@ const els = {
     liveStats: document.getElementById('live-stats'),
     typingContainer: document.getElementById('typing-container'),
     gameTitleArea: document.getElementById('game-title-area'),
-    editorWrapper: document.getElementById('editor-wrapper')
+    editorWrapper: document.getElementById('editor-wrapper'),
+    shareFeedback: document.getElementById('share-feedback'),
+    btnSharePreview: document.getElementById('btn-share-preview'),
+    shareModal: document.getElementById('share-modal'),
+    shareModalOverlay: document.querySelector('#share-modal .share-modal-overlay'),
+    btnCloseShare: document.getElementById('btn-close-share'),
+    shareModalWpm: document.getElementById('share-modal-wpm'),
+    shareModalAccuracy: document.getElementById('share-modal-accuracy'),
+    shareModalLanguage: document.getElementById('share-modal-language'),
+    shareModalMode: document.getElementById('share-modal-mode'),
+    shareModalDuration: document.getElementById('share-modal-duration'),
+    shareModalCaption: document.getElementById('share-modal-caption'),
+    shareModalFeedback: document.getElementById('share-modal-feedback'),
+    btnShareCopy: document.getElementById('btn-share-copy'),
+    btnShareOpen: document.getElementById('btn-share-open'),
+    modeBanner: document.getElementById('mode-banner'),
+    modeBannerLabel: document.getElementById('mode-banner-label'),
+    modeBannerCopy: document.getElementById('mode-banner-copy'),
+    modeBannerChip: document.getElementById('mode-banner-chip')
 };
 
 // Audio Context
 let audioCtx = null;
+let shareFeedbackTimeout = null;
+let shareModalFeedbackTimeout = null;
 
 function initAudio() {
     if (state.soundEnabled && !audioCtx) {
@@ -107,6 +131,231 @@ function playSound(isError = false) {
     osc.stop(t + 0.1);
 }
 
+function ensureViewable(el, offset = 96) {
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const above = rect.top < offset;
+    const below = rect.bottom > viewportHeight - offset;
+
+    if (above || below) {
+        const target = Math.max(window.scrollY + rect.top - offset, 0);
+        window.scrollTo({ top: target, behavior: 'smooth' });
+    }
+}
+
+function sanitizeLocalScores(scores) {
+    const MAX_WPM = 220;
+    const MIN_WPM = 5;
+    const MAX_ACC = 100;
+    const cleaned = scores.filter(entry => {
+        const wpm = Number(entry?.wpm ?? 0);
+        const acc = Number(entry?.accuracy ?? 0);
+        return Number.isFinite(wpm) && Number.isFinite(acc) && wpm >= MIN_WPM && wpm <= MAX_WPM && acc >= 0 && acc <= MAX_ACC;
+    });
+
+    if (cleaned.length !== scores.length) {
+        localStorage.setItem('cr_scores', JSON.stringify(cleaned));
+    }
+
+    return cleaned;
+}
+
+function showShareFeedback(message, isError = false) {
+    if (!els.shareFeedback) return;
+    els.shareFeedback.textContent = message;
+    els.shareFeedback.classList.remove('opacity-0');
+    els.shareFeedback.classList.remove('text-red-400', 'text-emerald-400');
+    els.shareFeedback.classList.add(isError ? 'text-red-400' : 'text-emerald-400');
+    clearTimeout(shareFeedbackTimeout);
+    shareFeedbackTimeout = setTimeout(() => {
+        els.shareFeedback.classList.add('opacity-0');
+    }, 2600);
+}
+
+function isShareModalOpen() {
+    return !!(els.shareModal && !els.shareModal.classList.contains('hidden'));
+}
+
+function getShareSnapshot() {
+    if (state.lastResult) {
+        return { ...state.lastResult, isDefault: false };
+    }
+    return {
+        wpm: 0,
+        accuracy: 100,
+        language: state.selectedLanguage || 'JavaScript',
+        mode: state.gameMode || 'STANDARD',
+        timeLimit: state.timeLimit || 60,
+        isDefault: true
+    };
+}
+
+function getReadableMode(mode) {
+    switch (mode) {
+        case 'SUDDEN_DEATH':
+            return 'Sudden Death';
+        case 'TIME_ATTACK':
+            return 'Time Attack';
+        default:
+            return 'Standard';
+    }
+}
+
+function getShareMessage(snapshot = getShareSnapshot()) {
+    if (!snapshot || snapshot.wpm <= 0) {
+        return 'Check out typingrunner - The ultimate developer typing test!';
+    }
+    return `I just hit ${snapshot.wpm} WPM with ${snapshot.accuracy}% accuracy typing ${snapshot.language} on typingrunner!`;
+}
+
+const MODE_THEME = {
+    STANDARD: {
+        label: 'Standard mode',
+        chip: 'Standard',
+        copy: 'Play steadily and finish the snippet.'
+    },
+    SUDDEN_DEATH: {
+        label: 'Sudden death',
+        chip: 'Sudden',
+        copy: 'One mistake ends the run. Every keystroke counts.'
+    },
+    TIME_ATTACK: {
+        label: 'Time attack',
+        chip: 'Time attack',
+        copy: 'Chain accurate inputs to earn bonus seconds.'
+    }
+};
+
+function applyModeTheme() {
+    const theme = MODE_THEME[state.gameMode] || MODE_THEME.STANDARD;
+    if (document && document.body) {
+        document.body.dataset.mode = state.gameMode || 'STANDARD';
+    }
+
+    if (els.modeBannerLabel) els.modeBannerLabel.textContent = theme.label;
+    if (els.modeBannerCopy) els.modeBannerCopy.textContent = theme.copy;
+    if (els.modeBannerChip) els.modeBannerChip.textContent = theme.chip;
+}
+
+function updateShareModalContent() {
+    if (!els.shareModal) return;
+    const snapshot = getShareSnapshot();
+    const caption = snapshot.wpm > 0
+        ? `${getShareMessage(snapshot)} Can you beat it?`
+        : 'Finish a run to generate a personalized highlight.';
+
+    if (els.shareModalWpm) els.shareModalWpm.textContent = `${snapshot.wpm} WPM`;
+    if (els.shareModalAccuracy) els.shareModalAccuracy.textContent = `${snapshot.accuracy}%`;
+    if (els.shareModalLanguage) els.shareModalLanguage.textContent = snapshot.language;
+    if (els.shareModalMode) els.shareModalMode.textContent = getReadableMode(snapshot.mode);
+    if (els.shareModalDuration) els.shareModalDuration.textContent = `${snapshot.timeLimit || 60}s`;
+    if (els.shareModalCaption) els.shareModalCaption.textContent = caption;
+    hideShareModalFeedback();
+}
+
+function openShareModal() {
+    if (!els.shareModal) return;
+    updateShareModalContent();
+    els.shareModal.classList.remove('hidden');
+    els.shareModal.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+}
+
+function closeShareModal() {
+    if (!els.shareModal) return;
+    els.shareModal.classList.add('hidden');
+    els.shareModal.classList.remove('flex');
+    document.body.classList.remove('overflow-hidden');
+    hideShareModalFeedback();
+}
+
+function showShareModalFeedback(message, isError = false) {
+    if (!els.shareModalFeedback) return;
+    els.shareModalFeedback.textContent = message;
+    els.shareModalFeedback.classList.remove('opacity-0');
+    els.shareModalFeedback.classList.remove('text-emerald-400', 'text-red-400');
+    els.shareModalFeedback.classList.add(isError ? 'text-red-400' : 'text-emerald-400');
+    clearTimeout(shareModalFeedbackTimeout);
+    shareModalFeedbackTimeout = setTimeout(() => {
+        hideShareModalFeedback();
+    }, 2500);
+}
+
+function hideShareModalFeedback() {
+    if (!els.shareModalFeedback) return;
+    els.shareModalFeedback.classList.add('opacity-0');
+    clearTimeout(shareModalFeedbackTimeout);
+}
+
+function focusEditorIfIdle(triggerKey = '') {
+    if (isShareModalOpen()) return false;
+    if (!els.hiddenInput || els.hiddenInput.disabled) return false;
+    if (state.status === 'FINISHED' || state.status === 'PAUSED') return false;
+
+    const activeEl = document.activeElement;
+    if (activeEl === els.hiddenInput) return false;
+    const interactiveTags = ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'];
+    if (activeEl && (interactiveTags.includes(activeEl.tagName) || activeEl.isContentEditable)) {
+        return false;
+    }
+
+    const ignoredKeys = ['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Escape', 'Tab'];
+    if (ignoredKeys.includes(triggerKey)) return false;
+
+    els.hiddenInput.focus({ preventScroll: true });
+    return true;
+}
+
+// Onboarding
+function runOnboarding() {
+    try {
+        if (localStorage.getItem('cr_onboard_seen')) return;
+        if (!window.introJs) return;
+
+        const steps = [
+            {
+                element: '#game-controls',
+                title: 'Pick your setup',
+                intro: 'Choose code/text, mode, time, and language before you start typing.'
+            },
+            {
+                element: '#typing-container',
+                title: 'Just start typing',
+                intro: 'Click the code area and type; the timer starts automatically and tracks WPM/accuracy.'
+            },
+            {
+                element: 'footer',
+                title: 'Share or replay',
+                intro: 'Share your run, copy the link, or restart to climb your leaderboard.'
+            }
+        ];
+
+        const tour = window.introJs();
+        tour.setOptions({
+            steps,
+            showProgress: true,
+            nextLabel: 'Next',
+            prevLabel: 'Back',
+            skipLabel: '✕',
+            doneLabel: 'Done',
+            hidePrev: true,
+            scrollTo: true,
+            scrollToElement: true,
+            scrollPadding: 120
+        });
+
+        const markSeen = () => localStorage.setItem('cr_onboard_seen', '1');
+        // Also hide tooltip on first user click or escape for convenience
+        tour.onbeforeexit(markSeen);
+        tour.oncomplete(markSeen);
+        tour.onexit(markSeen);
+        tour.start();
+    } catch (err) {
+        console.error('Onboarding failed', err);
+    }
+}
+
 // Spotlight Effect
 document.addEventListener('mousemove', (e) => {
     requestAnimationFrame(() => {
@@ -120,6 +369,7 @@ function init() {
     loadContent();
     renderLeaderboard();
     setupEventListeners();
+    runOnboarding();
 }
 
 function updateLanguageOptions() {
@@ -143,15 +393,31 @@ function loadContent() {
     }
     if (!lesson) lesson = STATIC_LESSONS.find(l => l.type === state.contentType);
 
-    if (lesson) {
-        // Handle dynamic generation
-        if (lesson.id.startsWith('gen-')) {
-            const wordCount = lesson.id.includes('100') ? 100 : 50;
-            lesson = getDynamicLesson(lesson.language, wordCount);
+    let templateSourceId = null;
+    if (lesson && lesson.id.startsWith('gen-')) {
+        templateSourceId = lesson.id;
+        if (lesson.type === 'text') {
+            const wordCount = lesson.id.includes('100') ? 100 : (lesson.id.includes('50') ? 50 : 60);
+            lesson = generateLesson(lesson.language, state.gameMode, { type: 'text', wordCount });
+        } else {
+            lesson = generateLesson(lesson.language, state.gameMode, { type: 'code' });
         }
+    } else if (!lesson) {
+        templateSourceId = `gen-${state.selectedLanguage}-fallback`;
+        lesson = generateLesson(
+            state.selectedLanguage,
+            state.gameMode,
+            {
+                type: state.contentType === 'text' ? 'text' : 'code',
+                wordCount: state.contentType === 'text' ? 60 : undefined
+            }
+        );
+    }
 
+    if (lesson) {
         state.snippet = lesson;
-        state.selectedLessonId = lesson.id;
+        state.selectedLessonId = templateSourceId || lesson.id;
+
         state.selectedLanguage = lesson.language;
         state.contentType = lesson.type;
         state.timeLimit = lesson.timeLimit;
@@ -178,6 +444,9 @@ function loadContent() {
         els.startPrompt.classList.remove('hidden');
         els.pausedOverlay.classList.add('hidden');
         els.pausedOverlay.classList.remove('flex');
+        els.lessonList.classList.remove('opacity-0', 'pointer-events-none');
+        document.getElementById('left-aside').classList.remove('opacity-0');
+        document.getElementById('right-aside').classList.remove('opacity-0');
         els.hiddenInput.disabled = false;
         els.hiddenInput.value = '';
         els.hiddenInput.focus();
@@ -185,7 +454,13 @@ function loadContent() {
         // Reset Pause Button
         els.btnPause.innerHTML = '<i data-lucide="pause" class="w-4 h-4"></i>';
         els.btnPause.disabled = true;
+        applyModeTheme();
         lucide.createIcons();
+        if (state.status === 'IDLE') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            ensureViewable(els.typingContainer);
+        }
     }
 }
 
@@ -244,8 +519,7 @@ function startGame() {
     state.startTime = Date.now();
     initAudio();
 
-    // Scroll to typing area
-    els.typingContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    ensureViewable(els.typingContainer);
 
     els.startPrompt.classList.add('hidden');
     els.gameControls.classList.add('opacity-0', 'pointer-events-none');
@@ -285,9 +559,7 @@ function handleInput(e) {
 
     if (state.status === 'IDLE') {
         startGame();
-        // Force scroll and focus on start
-        els.typingContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Ensure input keeps focus
+        ensureViewable(els.typingContainer);
         setTimeout(() => els.hiddenInput.focus(), 50);
     }
 
@@ -390,11 +662,23 @@ function calculateStats() {
 }
 
 function finishGame() {
+    if (state.startTime) {
+        const finalElapsed = (Date.now() - state.startTime) / 1000;
+        state.elapsedTime = Math.max(state.elapsedTime, finalElapsed);
+    }
+
     state.status = 'FINISHED';
     clearInterval(state.timerInterval);
     els.hiddenInput.disabled = true;
 
     const stats = calculateStats();
+    state.lastResult = {
+        wpm: Math.round(stats.wpm),
+        accuracy: Math.round(stats.accuracy),
+        language: state.selectedLanguage,
+        mode: state.gameMode,
+        timeLimit: state.timeLimit
+    };
 
     // Save score
     if (stats.wpm > 0) {
@@ -404,6 +688,7 @@ function finishGame() {
             wpm: Math.round(stats.wpm),
             accuracy: Math.round(stats.accuracy),
             language: state.selectedLanguage,
+            mode: state.gameMode,
             date: new Date().toISOString()
         };
 
@@ -423,6 +708,7 @@ function finishGame() {
     els.typingContainer.classList.add('hidden');
     els.resultsScreen.classList.remove('hidden');
     els.resultsScreen.classList.add('flex');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Restore UI elements visibility
     els.gameControls.classList.remove('opacity-0', 'pointer-events-none');
@@ -448,6 +734,7 @@ function togglePause() {
         document.getElementById('right-aside').classList.remove('opacity-0');
 
         lucide.createIcons();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (state.status === 'PAUSED') {
         state.status = 'PLAYING';
         els.hiddenInput.disabled = false;
@@ -464,6 +751,7 @@ function togglePause() {
         document.getElementById('right-aside').classList.add('opacity-0');
 
         lucide.createIcons();
+        ensureViewable(els.typingContainer);
 
         // Resume timer
         const now = Date.now();
@@ -489,7 +777,9 @@ function togglePause() {
 
 function renderLessonList() {
     const lessons = STATIC_LESSONS.filter(l => l.type === state.contentType && l.language === state.selectedLanguage);
-    els.lessonList.innerHTML = lessons.map(l => `
+    els.lessonList.innerHTML = lessons.map(l => {
+        const charLabel = l.id.startsWith('gen-') ? 'dynamic' : `${l.code.length} chars`;
+        return `
         <div class="group relative flex flex-col gap-2 rounded-xl border border-white/5 bg-zinc-900/40 p-4 transition-all hover:bg-zinc-800/60 hover:border-white/10 cursor-pointer ${l.id === state.selectedLessonId ? 'ring-1 ring-indigo-500/50 bg-zinc-800/60' : ''}" onclick="selectLesson('${l.id}')">
             <div class="flex items-center justify-between">
                 <span class="text-sm font-semibold text-zinc-200">${l.title}</span>
@@ -502,11 +792,11 @@ function renderLessonList() {
                 </div>
                 <div class="flex items-center gap-1">
                     <i data-lucide="align-left" class="w-3 h-3"></i>
-                    <span>${l.code.length} chars</span>
+                    <span>${charLabel}</span>
                 </div>
             </div>
         </div>
-    `).join('');
+    `; }).join('');
     lucide.createIcons();
 }
 
@@ -515,16 +805,22 @@ window.selectLesson = (id) => {
     loadContent();
 };
 
+function getLocalScores() {
+    const localScores = sanitizeLocalScores(JSON.parse(localStorage.getItem('cr_scores') || '[]'));
+    return localScores.map(s => ({
+        ...s,
+        name: s.name || state.userName,
+        isUser: true
+    }));
+}
+
 function renderLeaderboard() {
     if (state.dailyMockData.length === 0) {
         state.dailyMockData = generateDailyLeaderboard();
     }
 
-    const localScores = JSON.parse(localStorage.getItem('cr_scores') || '[]');
-    // Update local scores with current username if needed (optional, but good for display)
-    const updatedLocalScores = localScores.map(s => ({ ...s, name: state.userName }));
-
-    const allScores = [...state.dailyMockData, ...updatedLocalScores];
+    const localScores = getLocalScores();
+    const allScores = [...state.dailyMockData, ...localScores];
     allScores.sort((a, b) => b.wpm - a.wpm);
 
     els.leaderboardList.innerHTML = allScores.slice(0, 10).map((s, i) => `
@@ -533,7 +829,7 @@ function renderLeaderboard() {
                 <span class="font-mono text-xs font-bold text-zinc-600 w-4">${i + 1}</span>
                 <div class="flex flex-col">
                     <span class="text-xs font-medium ${s.isUser ? 'text-indigo-300' : 'text-zinc-300'}">${s.name}</span>
-                    <span class="text-[10px] text-zinc-500">${s.language}</span>
+                    <span class="text-[10px] text-zinc-500">${s.language || 'Unknown'}</span>
                 </div>
             </div>
             <span class="font-mono text-sm font-bold text-indigo-400">${s.wpm}</span>
@@ -619,12 +915,41 @@ function setupEventListeners() {
         lucide.createIcons();
     };
 
+    // Share preview modal
+    if (els.btnSharePreview) {
+        els.btnSharePreview.onclick = () => openShareModal();
+    }
+    if (els.btnCloseShare) {
+        els.btnCloseShare.onclick = () => closeShareModal();
+    }
+    if (els.shareModalOverlay) {
+        els.shareModalOverlay.onclick = () => closeShareModal();
+    }
+    if (els.btnShareCopy) {
+        els.btnShareCopy.onclick = () => {
+            const message = getShareMessage();
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(message)
+                    .then(() => showShareModalFeedback('Message copied'))
+                    .catch(() => showShareModalFeedback('Unable to copy', true));
+            } else {
+                window.prompt('Copy this message and share it anywhere:', message);
+            }
+        };
+    }
+    if (els.btnShareOpen) {
+        els.btnShareOpen.onclick = () => {
+            closeShareModal();
+            handleShare('native');
+        };
+    }
+
     // Input
     els.hiddenInput.addEventListener('input', handleInput);
 
     // Focus wrapper
     els.editorWrapper.onclick = () => {
-        if (state.status !== 'PAUSED' && state.status !== 'FINISHED') {
+        if (state.status !== 'FINISHED' && state.status !== 'PAUSED') {
             els.hiddenInput.focus();
         }
     };
@@ -732,7 +1057,32 @@ function setupEventListeners() {
 
     // Keyboard Listeners
     document.addEventListener('keydown', (e) => {
+        if (isShareModalOpen()) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeShareModal();
+            }
+            return;
+        }
+
         highlightKey(e.code, true);
+
+        const forcedFocus = focusEditorIfIdle(e.key);
+        if (forcedFocus) {
+            const isPrintable = e.key.length === 1;
+            if (isPrintable || e.key === 'Enter' || e.key === 'Backspace') {
+                e.preventDefault();
+                if (isPrintable) {
+                    els.hiddenInput.value += e.key;
+                } else if (e.key === 'Enter') {
+                    els.hiddenInput.value += '\n';
+                } else if (e.key === 'Backspace') {
+                    els.hiddenInput.value = els.hiddenInput.value.slice(0, -1);
+                }
+                handleInput();
+                return;
+            }
+        }
 
         if (e.key === 'Escape') togglePause();
         if (e.key === 'Tab') {
@@ -748,34 +1098,49 @@ function setupEventListeners() {
     });
 
     document.addEventListener('keyup', (e) => {
+        if (isShareModalOpen()) return;
         highlightKey(e.code, false);
     });
 
     // Share Logic
     window.handleShare = (platform) => {
-        const url = window.location.href;
-        const text = "Check out typingrunner - The ultimate developer typing test!";
-        const encodedUrl = encodeURIComponent(url);
-        const encodedText = encodeURIComponent(text);
+        const shareText = getShareMessage();
+        const encodedUrl = encodeURIComponent(SITE_URL);
+        const encodedText = encodeURIComponent(shareText);
 
         switch (platform) {
             case 'x':
-                window.open(`https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`, '_blank');
+                window.open(`https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}&hashtags=typingrunner`, '_blank');
+                showShareFeedback('Opening X to post your run');
                 break;
             case 'facebook':
                 window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, '_blank');
+                showShareFeedback('Share it with your crew on Facebook');
                 break;
             case 'copy':
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(SITE_URL)
+                        .then(() => showShareFeedback('Link copied — tag #typingrunner'))
+                        .catch(() => showShareFeedback('Unable to copy link', true));
+                } else {
+                    window.prompt('Copy this link and share it anywhere:', SITE_URL);
+                }
+                break;
+            case 'native':
                 if (navigator.share) {
                     navigator.share({
                         title: 'typingrunner',
-                        text: text,
-                        url: url
-                    }).catch(console.error);
+                        text: shareText,
+                        url: SITE_URL
+                    }).then(() => {
+                        showShareFeedback('Shared from your device!');
+                    }).catch(() => {});
+                } else if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(SITE_URL)
+                        .then(() => showShareFeedback('Link copied — tag #typingrunner'))
+                        .catch(() => showShareFeedback('Unable to copy link', true));
                 } else {
-                    navigator.clipboard.writeText(url).then(() => {
-                        alert('Link copied to clipboard!');
-                    });
+                    window.prompt('Copy this link and share it anywhere:', SITE_URL);
                 }
                 break;
         }

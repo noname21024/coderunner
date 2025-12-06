@@ -1,0 +1,10 @@
+Manual test steps for onboarding overlay
+
+1. Open `index.html` in a browser (or serve via GitHub Pages) and clear local storage key `cr_onboard_seen`.
+2. Refresh the page.
+3. Confirm the 3 step popup overlays the page and highlights the elements:
+   - Step 1: anchors to `#game-controls` with message about choosing language and mode.
+   - Step 2: anchors to `#typing-container` with message about starting typing.
+   - Step 3: anchors to `footer` with message about sharing and replay.
+4. Verify the tooltip background is dark and buttons are indigo, skip is a small '✕' at top-right.
+5. Press '✕' or Escape and ensure `cr_onboard_seen` is set in localStorage.

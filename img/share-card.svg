@@ -1,0 +1,31 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#141622"/>
+      <stop offset="1" stop-color="#1F1238"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop stop-color="#A78BFA" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#6366F1" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" rx="40" fill="url(#bg)"/>
+  <g opacity="0.25">
+    <path d="M0 90H1200" stroke="#9CA3AF" stroke-opacity="0.15" stroke-width="1"/>
+    <path d="M0 180H1200" stroke="#9CA3AF" stroke-opacity="0.1" stroke-width="1"/>
+    <path d="M0 270H1200" stroke="#9CA3AF" stroke-opacity="0.08" stroke-width="1"/>
+    <path d="M0 360H1200" stroke="#9CA3AF" stroke-opacity="0.06" stroke-width="1"/>
+    <path d="M0 450H1200" stroke="#9CA3AF" stroke-opacity="0.05" stroke-width="1"/>
+    <path d="M0 540H1200" stroke="#9CA3AF" stroke-opacity="0.04" stroke-width="1"/>
+  </g>
+  <g opacity="0.4">
+    <circle cx="160" cy="160" r="140" fill="#6D28D9" fill-opacity="0.35"/>
+    <circle cx="1040" cy="500" r="120" fill="#22D3EE" fill-opacity="0.25"/>
+  </g>
+  <text x="100" y="200" font-family="'JetBrains Mono', 'Segoe UI', monospace" font-size="86" font-weight="600" fill="#F8FAFC">typingrunner</text>
+  <text x="100" y="260" font-family="'Inter', 'Segoe UI', sans-serif" font-size="28" font-weight="500" fill="#CBD5F5">Developer typing speed test</text>
+  <rect x="100" y="300" width="320" height="70" rx="18" fill="url(#accent)"/>
+  <text x="130" y="348" font-family="'JetBrains Mono', 'Segoe UI', monospace" font-size="32" font-weight="600" fill="#F5F3FF">Avg 120+ WPM</text>
+  <text x="100" y="430" font-family="'Inter', 'Segoe UI', sans-serif" font-size="48" font-weight="700" fill="#A5B4FC">http://typingrunner.me/</text>
+  <text x="100" y="500" font-family="'Inter', 'Segoe UI', sans-serif" font-size="22" font-weight="400" fill="#94A3B8">Practice with JS, Python, Go, Rust & more.</text>
+</svg>

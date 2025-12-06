@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>typingrunner - Developer Typing Speed Test</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/intro.js/minified/introjs.min.css">
     <link rel="stylesheet" href="css/style.css">
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <!-- Favicon & Manifest -->
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon"  href="favicon.png">
+    <link rel="shortcut icon" href="favicon.png">
     <link rel="manifest" href="manifest.json">
 
     <!-- SEO & Social -->
@@ -18,12 +20,14 @@
     <meta property="og:title" content="typingrunner - Developer Typing Speed Test">
     <meta property="og:description" content="Test your coding speed with real code snippets. Support for JS, Python, Go, Rust, and more.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://typingrunner.com">
-    <meta property="og:image" content="https://images.unsplash.com/photo-1587620962725-abab7fe55159?q=80&w=1200&auto=format&fit=crop">
+    <meta property="og:site_name" content="typingrunner">
+    <meta property="og:url" content="http://typingrunner.me/">
+    <meta property="og:image" content="http://typingrunner.me/img/share-card.svg">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="typingrunner - Developer Typing Speed Test">
     <meta name="twitter:description" content="Test your coding speed with real code snippets.">
-    <meta name="twitter:image" content="https://images.unsplash.com/photo-1587620962725-abab7fe55159?q=80&w=1200&auto=format&fit=crop">
+    <meta name="twitter:image" content="http://typingrunner.me/img/share-card.svg">
+    <meta name="twitter:site" content="@typingrunner">
     <script>
         tailwind.config = {
             theme: {
@@ -39,8 +43,56 @@
             }
         }
     </script>
+    <style>
+        /* Customize intro.js tooltip to match dark site theme */
+        .introjs-tooltip {
+            background: #09090b !important; /* matching site's background */
+            color: #e6eef8 !important; /* light text */
+            border: 1px solid rgba(255,255,255,0.06) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 12px 30px rgba(2,6,23,0.8) !important;
+            padding: 18px !important;
+        }
+        .introjs-tooltip.intro-custom .introjs-tooltiptext {
+            color: #cbd5e1 !important;
+        }
+        .introjs-tooltip .introjs-header h3,
+        .introjs-tooltip .introjs-header h1 {
+            color: #fff !important;
+        }
+        .introjs-arrow {
+            color: #09090b !important;
+            border: none !important;
+        }
+        .introjs-tooltipbuttons .introjs-nextbutton {
+            background: linear-gradient(90deg,#6366f1,#8b5cf6) !important;
+            color: white !important;
+            border: none !important;
+            padding: 8px 14px !important;
+            border-radius: 8px !important;
+            box-shadow: 0 6px 16px rgba(99,102,241,0.18) !important;
+        }
+        .introjs-tooltipbuttons .introjs-prevbutton {
+            color: #94a3b8 !important;
+            background: transparent !important;
+            border: none !important;
+            padding: 8px 14px !important;
+            border-radius: 8px !important;
+        }
+        .introjs-tooltipbuttons .introjs-skipbutton {
+            background: transparent !important;
+            color: #93c5fd !important;
+            font-weight: 600 !important;
+            border: none !important;
+            padding: 0 8px !important;
+            font-size: 18px !important;
+        }
+        /* Optional: reposition skip to be a simple X at top-right when possible */
+        .introjs-skipbutton { position: absolute !important; top: 8px; right: 12px; }
+    </style>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
 </head>
 <body class="bg-zinc-950 text-zinc-100 font-sans min-h-screen flex flex-col relative overflow-x-hidden selection:bg-indigo-500/30">
     <!-- Spotlight Effect -->
@@ -51,7 +103,7 @@
     <header class="sticky top-0 z-50 w-full border-b border-white/5 bg-zinc-950/80 backdrop-blur-md">
         <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
             <div class="flex items-center gap-8">
-                <a href="https://typingrunner.com" class="flex items-center gap-2 site-link">
+                <a href="http://typingrunner.me/" class="flex items-center gap-2 site-link">
                     <div class="site-logo flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 border border-white/10 shadow-[0_0_15px_-3px_rgba(99,102,241,0.2)]">
                         <img src="img/logo.svg" alt="typingrunner logo" />
                     </div>
@@ -151,54 +203,58 @@
                 </div>
 
                 <!-- Typing Area -->
-                <div id="typing-container" class="relative w-full max-w-6xl flex flex-col items-center">
+                <div id="typing-container" class="relative w-full max-w-5xl flex flex-col items-center">
                     
-                    <!-- Live Stats -->
-                    <div id="live-stats" class="mb-6 w-full flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between transition-opacity duration-500">
-                        <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-8">
-                            <div class="flex flex-col items-center sm:items-start">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Time</span>
-                                <div class="flex items-center gap-2 font-mono text-xl sm:text-2xl font-bold text-zinc-200">
-                                    <i data-lucide="timer" class="w-4 h-4 text-zinc-500"></i>
-                                    <span id="timer-display">60s</span>
-                                </div>
+                    <!-- Live Stats - Single Row Layout -->
+                    <div id="live-stats" class="mb-4 w-full flex items-center justify-between transition-opacity duration-500 px-1">
+                        <!-- Stats Group -->
+                        <div class="flex items-center gap-4 sm:gap-6">
+                            <div class="flex items-center gap-1.5 sm:gap-2">
+                                <i data-lucide="timer" class="w-3.5 h-3.5 text-zinc-500 hidden sm:block"></i>
+                                <span id="timer-display" class="font-mono text-base sm:text-lg font-bold text-zinc-300">60s</span>
                             </div>
-                            <div class="flex flex-col items-center sm:items-start">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Net WPM</span>
-                                <span id="wpm-display" class="font-mono text-xl sm:text-2xl font-bold text-indigo-400">0</span>
+                            <div class="flex items-center gap-1.5 sm:gap-2">
+                                <span id="wpm-display" class="font-mono text-base sm:text-lg font-bold text-indigo-400">0</span>
+                                <span class="text-[10px] text-zinc-500 uppercase hidden sm:inline">wpm</span>
                             </div>
-                            <div class="flex flex-col items-center sm:items-start">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Accuracy</span>
-                                <span id="acc-display" class="font-mono text-xl sm:text-2xl font-bold text-zinc-200">100%</span>
+                            <div class="flex items-center gap-1.5 sm:gap-2">
+                                <span id="acc-display" class="font-mono text-base sm:text-lg font-bold text-emerald-400">100%</span>
                             </div>
-                             <div id="combo-container" class="flex flex-col items-center sm:items-start transition-all duration-300 opacity-50 scale-100">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Combo</span>
-                                <div class="flex items-center gap-2 font-mono text-xl sm:text-2xl font-bold text-orange-400">
-                                    <i data-lucide="flame" class="w-4 h-4"></i>
-                                    <span id="combo-display">0x</span>
-                                </div>
+                            <div id="combo-container" class="flex items-center gap-1.5 sm:gap-2 transition-all duration-300 opacity-50">
+                                <i data-lucide="flame" class="w-3.5 h-3.5 text-orange-400"></i>
+                                <span id="combo-display" class="font-mono text-base sm:text-lg font-bold text-orange-400">0x</span>
                             </div>
                         </div>
                         
-                        <div class="flex items-center justify-center gap-3">
-                            <button id="btn-sound" class="rounded p-2 transition-colors text-indigo-400 bg-indigo-500/10" title="Toggle Sound">
-                                <i data-lucide="volume-2" class="w-4 h-4"></i>
+                        <!-- Controls Group -->
+                        <div class="flex items-center gap-1 sm:gap-2">
+                            <span id="lang-badge" class="rounded bg-zinc-900 px-2 py-1 text-[10px] sm:text-xs font-medium text-zinc-500 border border-white/5">JavaScript</span>
+                            <button id="btn-sound" class="rounded p-1.5 sm:p-2 transition-colors text-indigo-400 bg-indigo-500/10" title="Toggle Sound">
+                                <i data-lucide="volume-2" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                             </button>
-                            <button id="btn-pause" class="rounded p-2 transition-colors text-zinc-600 hover:text-zinc-400 disabled:opacity-50" disabled title="Pause (Esc)">
-                                <i data-lucide="pause" class="w-4 h-4"></i>
+                            <button id="btn-pause" class="rounded p-1.5 sm:p-2 transition-colors text-zinc-600 hover:text-zinc-400 disabled:opacity-50" disabled title="Pause (Esc)">
+                                <i data-lucide="pause" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                             </button>
-                            <span id="lang-badge" class="rounded bg-zinc-900 px-2 py-1 text-xs font-medium text-zinc-500 border border-white/5">JavaScript</span>
-                            <button id="btn-restart" class="rounded p-2 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors" title="Restart">
-                                <i data-lucide="refresh-ccw" class="w-4 h-4"></i>
+                            <button id="btn-restart" class="rounded p-1.5 sm:p-2 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors" title="Restart">
+                                <i data-lucide="refresh-ccw" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                             </button>
                         </div>
+                    </div>
+
+                    <!-- Mode Banner -->
+                    <div id="mode-banner" class="mb-4 w-full rounded-xl border border-white/5 bg-zinc-900/40 px-4 py-3 flex items-center justify-between gap-4 text-left transition-all duration-300">
+                        <div class="flex flex-col gap-1">
+                            <p id="mode-banner-label" class="text-[11px] font-semibold uppercase tracking-widest text-zinc-400">Standard mode</p>
+                            <p id="mode-banner-copy" class="text-sm text-zinc-300">Play steadily and finish the snippet.</p>
+                        </div>
+                        <span id="mode-banner-chip" class="rounded-full border border-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-zinc-300">Standard</span>
                     </div>
 
                     <!-- Input Area -->
                     <div class="relative w-full group" id="editor-wrapper">
                         <textarea id="hidden-input" class="absolute inset-0 -z-10 h-full w-full opacity-0 resize-none cursor-default" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
                         
-                        <div id="code-display" class="relative min-h-[400px] max-h-[600px] w-full cursor-text overflow-hidden rounded-xl border border-white/5 bg-zinc-950/50 p-8 shadow-2xl backdrop-blur-sm transition-all duration-300 hover:border-white/10">
+                        <div id="code-display" class="relative min-h-[350px] sm:min-h-[400px] max-h-[70vh] w-full cursor-text overflow-hidden rounded-xl border border-white/5 bg-zinc-950/50 p-4 sm:p-6 shadow-2xl backdrop-blur-sm transition-all duration-300 hover:border-white/10 focus-within:border-indigo-500/30">
                             
                             <!-- Paused Overlay -->
                             <div id="paused-overlay" class="hidden absolute inset-0 z-50 flex-col items-center justify-center bg-zinc-950/80 backdrop-blur-sm">
@@ -310,7 +366,7 @@
             <!-- Brand -->
             <div class="flex flex-col gap-2">
                 <div class="flex items-center gap-2">
-                    <a href="https://typingrunner.com" class="flex items-center gap-2">
+                    <a href="http://typingrunner.me/" class="flex items-center gap-2">
                         <div class="site-logo rounded-lg overflow-hidden bg-transparent">
                             <img src="img/logo.svg" alt="typingrunner logo" />
                         </div>
@@ -330,9 +386,10 @@
                     <a href="privacy.html" class="text-left text-xs text-zinc-600 hover:text-zinc-300 transition-colors">Privacy Policy</a>
                     <a href="terms.html" class="text-left text-xs text-zinc-600 hover:text-zinc-300 transition-colors">Terms of Service</a>
                 </div>
-                <div class="flex flex-col gap-3">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Share</span>
-                    <div class="flex items-center gap-3">
+                <div class="flex max-w-sm flex-col gap-3">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Share your run</span>
+                    <p class="text-left text-xs leading-relaxed text-zinc-500">Post your latest streak, tag <span class="text-zinc-300 font-semibold">#typingrunner</span>, and invite friends to beat your WPM.</p>
+                    <div class="flex flex-wrap items-center gap-3">
                         <button onclick="handleShare('x')" class="group flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-zinc-900 transition-all hover:bg-zinc-800 hover:text-white text-zinc-500" title="Share on X">
                             <i data-lucide="twitter" class="w-3.5 h-3.5"></i>
                         </button>
@@ -342,10 +399,15 @@
                         <button onclick="handleShare('copy')" class="group relative flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-zinc-900 transition-all hover:bg-zinc-800 hover:text-pink-400 text-zinc-500" title="Share on Instagram / TikTok (Copy Link)">
                             <i data-lucide="instagram" class="w-3.5 h-3.5"></i>
                         </button>
-                        <button onclick="handleShare('copy')" class="group relative flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-zinc-900 transition-all hover:bg-zinc-800 hover:text-white text-zinc-500" title="Share Link">
+                        <button onclick="handleShare('native')" class="group relative flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-zinc-900 transition-all hover:bg-zinc-800 hover:text-white text-zinc-500" title="Share via device sheet">
                             <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
                         </button>
+                        <button id="btn-share-preview" class="flex items-center gap-2 rounded-lg border border-indigo-500/20 bg-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-indigo-400 transition-all hover:bg-indigo-500/20">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                            <span>Preview card</span>
+                        </button>
                     </div>
+                    <span id="share-feedback" class="text-[11px] font-semibold text-emerald-400 opacity-0 transition-opacity duration-300">Link copied — tag #typingrunner</span>
                 </div>
             </div>
         </div>
@@ -356,6 +418,59 @@
             </p>
         </div>
     </footer>
+
+    <!-- Share Preview Modal -->
+    <div id="share-modal" class="hidden fixed inset-0 z-50 items-center justify-center">
+        <div class="share-modal-overlay absolute inset-0 bg-zinc-950/80 backdrop-blur-sm"></div>
+        <div class="relative z-10 w-[min(520px,90%)] rounded-2xl border border-white/5 bg-zinc-950/90 p-6 shadow-2xl">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-xs uppercase tracking-wider text-indigo-300">Share preview</p>
+                    <h3 class="text-2xl font-bold text-white">typingrunner</h3>
+                </div>
+                <button id="btn-close-share" class="text-zinc-500 hover:text-white" aria-label="Close share preview">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="mt-6 rounded-xl border border-white/5 bg-gradient-to-br from-zinc-950 via-zinc-900 to-indigo-950 p-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-zinc-500">Your latest run</p>
+                        <div class="text-4xl font-mono font-bold text-white" id="share-modal-wpm">0 WPM</div>
+                    </div>
+                    <span class="rounded-full border border-indigo-500/40 px-3 py-1 text-xs text-indigo-300" id="share-modal-mode">Standard</span>
+                </div>
+                <div class="mt-4 flex items-center gap-4 text-sm text-zinc-400">
+                    <div>
+                        <p class="text-[10px] uppercase tracking-wide text-zinc-500">Accuracy</p>
+                        <p class="text-lg font-semibold text-emerald-300" id="share-modal-accuracy">100%</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase tracking-wide text-zinc-500">Language</p>
+                        <p class="text-lg font-semibold text-zinc-200" id="share-modal-language">JavaScript</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase tracking-wide text-zinc-500">Duration</p>
+                        <p class="text-lg font-semibold text-zinc-200" id="share-modal-duration">60s</p>
+                    </div>
+                </div>
+                <p class="mt-4 text-sm text-zinc-400" id="share-modal-caption">Just hit 0 WPM with 100% accuracy typing JavaScript on typingrunner! Can you beat it?</p>
+            </div>
+
+            <div class="mt-5 flex flex-wrap items-center gap-3">
+                <button id="btn-share-copy" class="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-500">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                    Copy message
+                </button>
+                <button id="btn-share-open" class="flex items-center gap-2 rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold text-zinc-200 hover:bg-white/5">
+                    <i data-lucide="share-2" class="w-4 h-4"></i>
+                    Open share menu
+                </button>
+            </div>
+            <p id="share-modal-feedback" class="mt-3 text-xs font-semibold text-emerald-400 opacity-0 transition-opacity duration-300">Message copied</p>
+        </div>
+    </div>
 
     <script src="js/data.js"></script>
     <script src="js/lessons_1.js"></script>

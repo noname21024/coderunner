@@ -196,3 +196,20 @@ window.LESSONS_PART_3 = [
         code: generateRandomText('Russian', 100)
     }
 ];
+
+// Attach dynamic code generators so every language has a template-based option
+if (window.LANGUAGES && Array.isArray(LANGUAGES.code)) {
+    const generatorLessons = LANGUAGES.code.map(language => ({
+        id: `gen-${language}-code`,
+        language,
+        type: 'code',
+        difficulty: 'Adaptive',
+        timeLimit: 75,
+        title: `${language} Template Generator`,
+        code: '// Dynamic snippet generated when selected',
+        description: 'Creates a fresh snippet via generateLesson()',
+        isTemplateGenerator: true
+    }));
+
+    window.LESSONS_PART_3 = [...window.LESSONS_PART_3, ...generatorLessons];
+}

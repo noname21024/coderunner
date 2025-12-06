@@ -46,3 +46,74 @@
 .animate-cursor {
     animation: cursor-blink 1s step-end infinite;
 }
+
+#code-display {
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+#live-stats {
+    transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+#mode-banner {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(15, 15, 17, 0.85);
+    box-shadow: 0 8px 24px rgba(2, 6, 23, 0.25);
+}
+
+body[data-mode="SUDDEN_DEATH"] #code-display {
+    border-color: rgba(248, 113, 113, 0.4);
+    box-shadow: 0 0 32px rgba(127, 29, 29, 0.35);
+}
+
+body[data-mode="SUDDEN_DEATH"] #live-stats {
+    background: linear-gradient(120deg, rgba(63, 11, 11, 0.6), rgba(9, 9, 11, 0.85));
+    box-shadow: inset 0 0 25px rgba(248, 113, 113, 0.08);
+    border-radius: 12px;
+    padding: 0.65rem 1rem;
+}
+
+body[data-mode="SUDDEN_DEATH"] #mode-banner {
+    border-color: rgba(248, 113, 113, 0.5);
+    background: radial-gradient(circle at top right, rgba(248, 113, 113, 0.2), rgba(9, 9, 11, 0.9));
+    box-shadow: 0 12px 32px rgba(127, 29, 29, 0.4);
+}
+
+body[data-mode="SUDDEN_DEATH"] #mode-banner-label,
+body[data-mode="SUDDEN_DEATH"] #mode-banner-copy,
+body[data-mode="SUDDEN_DEATH"] #mode-banner-chip {
+    color: #fecdd3;
+    border-color: rgba(248, 113, 113, 0.4);
+}
+
+body[data-mode="SUDDEN_DEATH"] #mode-banner-copy {
+    color: #fda4af;
+}
+
+body[data-mode="TIME_ATTACK"] #code-display {
+    border-color: rgba(251, 191, 36, 0.45);
+    box-shadow: 0 0 32px rgba(251, 191, 36, 0.25);
+}
+
+body[data-mode="TIME_ATTACK"] #live-stats {
+    background: linear-gradient(120deg, rgba(80, 53, 6, 0.55), rgba(9, 9, 11, 0.9));
+    box-shadow: inset 0 0 25px rgba(251, 191, 36, 0.12);
+    border-radius: 12px;
+    padding: 0.65rem 1rem;
+}
+
+body[data-mode="TIME_ATTACK"] #mode-banner {
+    border-color: rgba(251, 191, 36, 0.4);
+    background: radial-gradient(circle at top right, rgba(251, 191, 36, 0.2), rgba(9, 9, 11, 0.95));
+    box-shadow: 0 12px 32px rgba(251, 191, 36, 0.35);
+}
+
+body[data-mode="TIME_ATTACK"] #mode-banner-label,
+body[data-mode="TIME_ATTACK"] #mode-banner-chip {
+    color: #fde68a;
+    border-color: rgba(251, 191, 36, 0.35);
+}
+
+body[data-mode="TIME_ATTACK"] #mode-banner-copy {
+    color: #fef3c7;
+}

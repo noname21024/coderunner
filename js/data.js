@@ -95,16 +95,305 @@ function generateRandomText(language, wordCount) {
     return words.join(' ');
 }
 
-function getDynamicLesson(language, wordCount) {
+function buildTextLesson(language, wordCount) {
     return {
         id: `gen-${language}-${Date.now()}`,
-        language: language,
+        language,
         title: `Random ${language} (${wordCount} Words)`,
         code: generateRandomText(language, wordCount),
         type: 'text',
         difficulty: wordCount > 50 ? 'Hard' : 'Medium',
         timeLimit: Math.floor(wordCount * 1.2)
     };
+}
+
+const RUNNER_HANDLES = ['Atlas', 'Nova', 'Coda', 'Lumen', 'Echo', 'Vega', 'Quill', 'Flux'];
+const HTTP_ENDPOINTS = ['/api/runs', '/api/leaderboard', '/api/pulse', '/api/stats', '/api/sessions'];
+const SQL_TABLES = ['runs', 'snapshots', 'segments', 'sessions', 'insights'];
+const HTML_COMPONENTS = ['stat-card', 'pulse-banner', 'feature-callout', 'gradient-panel'];
+
+const MODE_TIME_TUNING = {
+    STANDARD: { label: 'Standard', multiplier: 1 },
+    SUDDEN_DEATH: { label: 'Sudden Death', multiplier: 0.85 },
+    TIME_ATTACK: { label: 'Time Attack', multiplier: 0.75 }
+};
+
+function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function pickRandom(list) {
+    return list[Math.floor(Math.random() * list.length)];
+}
+
+function buildRunEntries(count = 4) {
+    return Array.from({ length: count }).map(() => ({
+        name: pickRandom(RUNNER_HANDLES),
+        wpm: randInt(78, 135),
+        accuracy: randInt(92, 99)
+    }));
+}
+
+function buildHtmlStats(count = 3) {
+    return Array.from({ length: count }).map(() => ({
+        title: pickRandom(['Top run', 'Avg speed', 'Consistency', 'Focus time', 'Best streak']),
+        value: `${randInt(80, 140)} WPM`,
+        caption: `Tracked from ${randInt(3, 9)} sessions`
+    }));
+}
+
+const CODE_TEMPLATE_LIBRARY = {
+    JavaScript: [
+        {
+            id: 'js-pulse-normalizer',
+            title: 'Pulse Normalizer Utility',
+            difficulty: 'Medium',
+            baseTime: 80,
+            builder: () => {
+                const runs = buildRunEntries(4);
+                const threshold = randInt(93, 97);
+                const body = runs.map(run => `  { name: '${run.name}', wpm: ${run.wpm}, accuracy: ${run.accuracy} }`).join(',\n');
+                return `const runs = [\n${body}\n];\n\nfunction normalizePulse(dataset) {\n  return dataset\n    .filter(run => run.accuracy >= ${threshold})\n    .map(run => ({ ...run, score: Math.round(run.wpm * run.accuracy / 100) }))\n    .sort((a, b) => b.score - a.score)\n    .slice(0, 3);\n}\n\nconsole.table(normalizePulse(runs));`;
+            }
+        },
+        {
+            id: 'js-async-ingest',
+            title: 'Async Ingest Pipeline',
+            difficulty: 'Hard',
+            baseTime: 95,
+            builder: () => {
+                const endpoint = pickRandom(HTTP_ENDPOINTS);
+                return `async function hydratePulse(signal) {\n  const response = await fetch('${endpoint}', {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify(signal)\n  });\n\n  if (!response.ok) {\n    throw new Error('Failed to hydrate pulse');\n  }\n\n  return response.json();\n}\n\nconst payload = {\n  runs: ${randInt(3, 8)},\n  mode: '${pickRandom(['standard', 'sudden_death', 'time_attack'])}'\n};\n\nhydratePulse(payload).then(console.log);`;
+            }
+        },
+        {
+            id: 'js-state-registry',
+            title: 'State Registry Builder',
+            difficulty: 'Medium',
+            baseTime: 85,
+            builder: () => {
+                const registry = buildRunEntries(3).map(run => `  '${run.name.toLowerCase()}': {\n    wpm: ${run.wpm},\n    accuracy: ${run.accuracy}\n  }`).join(',\n');
+                return `const registry = {\n${registry}\n};\n\nfunction promote(handle) {\n  const record = registry[handle];\n  if (!record) return null;\n  return { ...record, promotedAt: new Date().toISOString() };\n}\n\nconsole.log(promote('${pickRandom(RUNNER_HANDLES).toLowerCase()}'));`;
+            }
+        }
+    ],
+    TypeScript: [
+        {
+            id: 'ts-leaderboard-map',
+            title: 'Leaderboard Mapper',
+            difficulty: 'Medium',
+            baseTime: 85,
+            builder: () => {
+                const runs = buildRunEntries(3);
+                const rows = runs.map(run => `  { name: '${run.name}', wpm: ${run.wpm}, accuracy: ${run.accuracy} }`).join(',\n');
+                return `type Run = { name: string; wpm: number; accuracy: number };\n\nconst runs: Run[] = [\n${rows}\n];\n\nconst grouped = runs.reduce<Record<string, Run[]>>((acc, run) => {\n  const bucket = run.accuracy >= ${randInt(94, 97)} ? 'focus' : 'retry';\n  acc[bucket] = acc[bucket] || [];\n  acc[bucket].push(run);\n  return acc;\n}, {});\n\nconsole.log(grouped);`;
+            }
+        },
+        {
+            id: 'ts-schema-diff',
+            title: 'Schema Diff Helper',
+            difficulty: 'Hard',
+            baseTime: 95,
+            builder: () => {
+                return `type Pulse = { id: string; wpm: number; accuracy: number };\n\nfunction diff(left: Pulse[], right: Pulse[]): Pulse[] {\n  const lookup = new Map(right.map(item => [item.id, item]));\n  return left.filter(item => {\n    const other = lookup.get(item.id);\n    return !other || other.wpm !== item.wpm;\n  });\n}\n\nconsole.log(diff([\n  { id: 'alpha', wpm: ${randInt(80, 110)}, accuracy: 98 },\n  { id: 'beta', wpm: ${randInt(82, 115)}, accuracy: 96 }\n], [\n  { id: 'alpha', wpm: ${randInt(90, 120)}, accuracy: 99 }\n]));`;
+            }
+        }
+    ],
+    Python: [
+        {
+            id: 'py-dataclass-filter',
+            title: 'Dataclass Run Filter',
+            difficulty: 'Medium',
+            baseTime: 80,
+            builder: () => {
+                const runs = buildRunEntries(4);
+                const rows = runs.map(run => `    Run(name='${run.name}', wpm=${run.wpm}, accuracy=${run.accuracy})`).join('\n');
+                return `from dataclasses import dataclass\nfrom statistics import mean\n\n@dataclass\nclass Run:\n    name: str\n    wpm: int\n    accuracy: int\n\nruns = [\n${rows}\n]\n\nfiltered = [r for r in runs if r.accuracy >= ${randInt(93, 97)}]\nif filtered:\n    avg = mean(r.wpm for r in filtered)\n    print(f"Team avg: {avg:.1f} WPM")\nelse:\n    print('No qualifying runs yet')`;
+            }
+        },
+        {
+            id: 'py-async-meter',
+            title: 'Async Meter Collector',
+            difficulty: 'Hard',
+            baseTime: 95,
+            builder: () => {
+                return `import asyncio\n\nasync def fetch_metric(name: str) -> dict:\n    await asyncio.sleep(0.1)\n    return {"handle": name, "wpm": ${randInt(80, 125)}}\n\nasync def gather_pulse(handles):\n    results = await asyncio.gather(*(fetch_metric(h) for h in handles))\n    return sorted(results, key=lambda item: item['wpm'], reverse=True)\n\nprint(asyncio.run(gather_pulse(["atlas", "nova", "flux"])))`;
+            }
+        }
+    ],
+    Go: [
+        {
+            id: 'go-batch-split',
+            title: 'Batch Splitter',
+            difficulty: 'Medium',
+            baseTime: 85,
+            builder: () => {
+                const runs = buildRunEntries(4);
+                const rows = runs.map(run => `        {name: "${run.name}", wpm: ${run.wpm}}`).join(',\n');
+                return `package main\n\nimport "fmt"\n\ntype run struct {\n    name string\n    wpm  int\n}\n\nfunc splitBatches(runs []run, size int) [][]run {\n    batches := [][]run{}\n    for size < len(runs) {\n        runs, batches = runs[size:], append(batches, runs[0:size])\n    }\n    batches = append(batches, runs)\n    return batches\n}\n\nfunc main() {\n    runs := []run{\n${rows}\n    }\n\n    for _, batch := range splitBatches(runs, ${randInt(2, 3)}) {\n        fmt.Println(batch)\n    }\n}`;
+            }
+        },
+        {
+            id: 'go-metric-channel',
+            title: 'Metric Channel Fan-in',
+            difficulty: 'Hard',
+            baseTime: 95,
+            builder: () => {
+                return `package main\n\nimport (\n    "fmt"\n    "time"\n)\n\nfunc pump(id string, out chan<- int) {\n    for i := 0; i < 3; i++ {\n        out <- ${randInt(70, 120)} + i\n        time.Sleep(50 * time.Millisecond)\n    }\n}\n\nfunc main() {\n    out := make(chan int)\n    go pump("alpha", out)\n    go pump("beta", out)\n\n    for i := 0; i < 6; i++ {\n        fmt.Println(<-out)\n    }\n}`;
+            }
+        }
+    ],
+    Rust: [
+        {
+            id: 'rs-focus-window',
+            title: 'Focus Window Analyzer',
+            difficulty: 'Hard',
+            baseTime: 95,
+            builder: () => {
+                const runs = buildRunEntries(4);
+                const rows = runs.map(run => `        Run { name: "${run.name}", wpm: ${run.wpm}, accuracy: ${run.accuracy} },`).join('\n');
+                return `struct Run {\n    name: &'static str,\n    wpm: u32,\n    accuracy: u8,\n}\n\nfn main() {\n    let runs = vec![\n${rows}\n    ];\n\n    let focus: Vec<&Run> = runs\n        .iter()\n        .filter(|run| run.accuracy >= ${randInt(94, 98)})\n        .collect();\n\n    if let Some(best) = focus.iter().max_by_key(|run| run.wpm) {\n        println!("Fastest: {} @ {} WPM", best.name, best.wpm);\n    } else {\n        println!("No focus runs recorded");\n    }\n}`;
+            }
+        },
+        {
+            id: 'rs-trend-fold',
+            title: 'Trend Fold Calculator',
+            difficulty: 'Medium',
+            baseTime: 85,
+            builder: () => {
+                return `fn trend(window: &[u32]) -> Option<f32> {\n    if window.is_empty() {\n        return None;\n    }\n    let sum: u32 = window.iter().sum();\n    Some(sum as f32 / window.len() as f32)\n}\n\nfn main() {\n    let buffer = vec![${randInt(70, 110)}, ${randInt(85, 130)}, ${randInt(80, 120)}, ${randInt(90, 140)}];\n    match trend(&buffer) {\n        Some(avg) => println!("Trend avg: {:.1} WPM", avg),\n        None => println!("Buffer empty"),\n    }\n}`;
+            }
+        }
+    ],
+    Java: [
+        {
+            id: 'java-stream-summary',
+            title: 'Stream Summary Job',
+            difficulty: 'Medium',
+            baseTime: 90,
+            builder: () => {
+                const runs = buildRunEntries(4);
+                const rows = runs.map(run => `                new Run("${run.name}", ${run.wpm}, ${run.accuracy})`).join(',\n');
+                return `import java.util.List;\n\npublic class PulseJob {\n    record Run(String name, int wpm, int accuracy) {}\n\n    public static void main(String[] args) {\n        List<Run> runs = List.of(\n${rows}\n        );\n\n        double avg = runs.stream()\n                .filter(run -> run.accuracy() >= ${randInt(94, 97)})\n                .mapToInt(Run::wpm)\n                .average()\n                .orElse(0);\n\n        System.out.printf("Squad avg: %.1f WPM%n", avg);\n    }\n}`;
+            }
+        },
+        {
+            id: 'java-scheduled-publisher',
+            title: 'Scheduled Publisher',
+            difficulty: 'Hard',
+            baseTime: 100,
+            builder: () => {
+                return `import java.time.Instant;\nimport java.util.Timer;\nimport java.util.TimerTask;\n\npublic class Publisher {\n    public static void main(String[] args) {\n        Timer timer = new Timer();\n        timer.scheduleAtFixedRate(new TimerTask() {\n            @Override\n            public void run() {\n                System.out.println("Tick @ " + Instant.now());\n            }\n        }, 0, ${randInt(800, 1500)});\n    }\n}`;
+            }
+        }
+    ],
+    'C++': [
+        {
+            id: 'cpp-rolling-top',
+            title: 'Rolling Top Tracker',
+            difficulty: 'Hard',
+            baseTime: 95,
+            builder: () => {
+                const runs = buildRunEntries(4);
+                const rows = runs.map(run => `    Run{"${run.name}", ${run.wpm}, ${run.accuracy}}`).join(',\n');
+                return `#include <algorithm>\n#include <array>\n#include <iostream>\n#include <string>\n\nstruct Run {\n    std::string name;\n    int wpm;\n    int accuracy;\n};\n\nint main() {\n    std::array<Run, 4> runs{{\n${rows}\n    }};\n\n    std::sort(runs.begin(), runs.end(), [](const Run& a, const Run& b) {\n        return a.wpm > b.wpm;\n    });\n\n    for (const auto& run : runs) {\n        if (run.accuracy >= ${randInt(93, 97)}) {\n            std::cout << run.name << " -> " << run.wpm << " WPM" << std::endl;\n        }\n    }\n}\n`;
+            }
+        },
+        {
+            id: 'cpp-matrix-reducer',
+            title: 'Matrix Reducer',
+            difficulty: 'Medium',
+            baseTime: 90,
+            builder: () => {
+                return `#include <array>\n#include <iostream>\n\nint main() {\n    std::array<int, 4> wpm{${randInt(80, 110)}, ${randInt(85, 120)}, ${randInt(90, 130)}, ${randInt(95, 140)}};\n    int total = 0;\n    for (auto value : wpm) {\n        total += value;\n    }\n    std::cout << "Average: " << total / wpm.size() << std::endl;\n}`;
+            }
+        }
+    ],
+    SQL: [
+        {
+            id: 'sql-ranked-window',
+            title: 'Ranked Window Query',
+            difficulty: 'Medium',
+            baseTime: 85,
+            builder: () => {
+                const table = pickRandom(SQL_TABLES);
+                return `WITH ranked_runs AS (\n  SELECT user_id, wpm, accuracy,\n         ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY wpm DESC) AS rank\n  FROM ${table}\n  WHERE created_at::date = CURRENT_DATE\n)\nSELECT user_id, wpm, accuracy\nFROM ranked_runs\nWHERE rank <= ${randInt(2, 4)}\nORDER BY wpm DESC;`;
+            }
+        },
+        {
+            id: 'sql-rolling-average',
+            title: 'Rolling Average Query',
+            difficulty: 'Hard',
+            baseTime: 95,
+            builder: () => {
+                const table = pickRandom(SQL_TABLES);
+                return `SELECT bucket, AVG(wpm) AS avg_wpm\nFROM (\n  SELECT DATE_TRUNC('hour', created_at) AS bucket, wpm\n  FROM ${table}\n  WHERE created_at >= NOW() - INTERVAL '1 day'\n) t\nGROUP BY bucket\nORDER BY bucket ASC;`;
+            }
+        }
+    ],
+    HTML: [
+        {
+            id: 'html-pulse-grid',
+            title: 'Pulse Grid Component',
+            difficulty: 'Easy',
+            baseTime: 70,
+            builder: () => {
+                const stats = buildHtmlStats(3).map(stat => `    <article class="stat-card">\n        <p class="label">${stat.title}</p>\n        <h3>${stat.value}</h3>\n        <p class="caption">${stat.caption}</p>\n    </article>`).join('\n');
+                return `<section class="${pickRandom(HTML_COMPONENTS)}">\n${stats}\n</section>`;
+            }
+        },
+        {
+            id: 'html-marquee-feed',
+            title: 'Marquee Feed',
+            difficulty: 'Medium',
+            baseTime: 80,
+            builder: () => {
+                const badges = RUNNER_HANDLES.map(handle => `<span>${handle} ${randInt(80, 140)} WPM</span>`).join('\n        ');
+                return `<div class="marquee">\n    <div class="marquee__track">\n        ${badges}\n    </div>\n</div>`;
+            }
+        }
+    ],
+    default: [
+        {
+            id: 'generic-dataset',
+            title: 'Generic Dataset Sketch',
+            difficulty: 'Medium',
+            baseTime: 80,
+            builder: () => {
+                const runs = buildRunEntries(3);
+                return JSON.stringify(runs, null, 2);
+            }
+        }
+    ]
+};
+
+function generateLesson(language, mode = 'STANDARD', options = {}) {
+    const requestedType = options.type || 'code';
+
+    if (requestedType === 'text' || (!LANGUAGES.code.includes(language) && LANGUAGES.text.includes(language))) {
+        const wordCount = options.wordCount || 60;
+        return buildTextLesson(language, wordCount);
+    }
+
+    const templatePool = CODE_TEMPLATE_LIBRARY[language] || CODE_TEMPLATE_LIBRARY.default;
+    const template = pickRandom(templatePool);
+    const modeConfig = MODE_TIME_TUNING[mode] || MODE_TIME_TUNING.STANDARD;
+    const code = template.builder();
+
+    return {
+        id: `gen-${language}-${mode}-${Date.now()}`,
+        language,
+        title: `${template.title} (${modeConfig.label})`,
+        code,
+        type: 'code',
+        difficulty: template.difficulty,
+        timeLimit: Math.max(45, Math.round(template.baseTime * modeConfig.multiplier)),
+        templateId: template.id
+    };
+}
+
+function getDynamicLesson(language, wordCount) {
+    return buildTextLesson(language, wordCount);
 }
 
 // Leaderboard Logic
