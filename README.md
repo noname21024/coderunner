@@ -27,25 +27,5 @@ How to play (brief)
 3. Focus on typing the code that appears in the test area; errors impact accuracy and combo.
 4. Stop when the timer ends and review your WPM, accuracy, and errors.
 
-## Supabase backend (optional)
-The UI now ships with an optional Supabase-powered leaderboard. To enable it:
-
-1. **Create a project** at [supabase.com](https://supabase.com) and note the project URL + anon key.
-2. **Provision table** `runs` with columns: `id uuid default gen_random_uuid()`, `name text`, `wpm int`, `accuracy int`, `language text`, `mode text default 'STANDARD'`, `created_at timestamptz default now()`.
-3. **Enable Row Level Security** and add policies:
-	- `SELECT`: allow anon role to read `runs` ordered by WPM.
-	- `INSERT`: allow anon role to insert while constraining `wpm BETWEEN 0 AND 400` and `accuracy BETWEEN 0 AND 100` (optional check via `WITH CHECK`).
-4. **Update `js/config.js`** with your `url` and `anonKey`. The anon key is safe for public SPAs when RLS is enforced.
-5. (Optional) **Edge Function validation** – if you need additional validation before insert, expose an Edge Function and point `BackendService.request` to it.
-
-Once configured, the frontend automatically:
-- Posts every completed run to Supabase via `BackendService.submitScore`.
-- Pulls the top 10 runs using the REST endpoint `/rest/v1/runs?select=*&order=wpm.desc&limit=10`.
-- Fallbacks to local/mock data when the backend is unreachable.
-
-Important: No downloading or redistribution
-- This site is intended to be used via the live website only. You may not download, copy, redistribute, or host the website content externally without explicit permission from the owner.
-- If you are the owner and want to provide a distributable version, contact the project owner for permission and licensing details.
-
 ## Contact
 Support & feedback: support@typingrunner.me
