@@ -4,7 +4,9 @@ typingrunner is a focused, developer-oriented typing playground built for progra
 
 ## Live site
 - Production URL: [http://typingrunner.me/](http://typingrunner.me/)
-- Social preview: [`img/share-card.svg`](img/share-card.svg)
+- Social preview: 
+
+	![typingrunner social preview](img/share-card.svg)
 
 Target audience
 - Developers of all levels who want to practice typing real programming language syntax (JavaScript, Python, Go, Rust, etc.) instead of natural language.
